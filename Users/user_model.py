@@ -9,10 +9,10 @@ qr="""
            CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 full_name VARCHAR(50) NOT NULL,
-                address TEXT  NULL,
+                address TEXT NULL,
                 email VARCHAR(100) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
-                contact VARCHAR(20)  NULL,
+                contact VARCHAR(20),
                 github_link VARCHAR(100) NULL,
                 about_me TEXT NULL,
                 created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
