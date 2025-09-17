@@ -27,8 +27,30 @@ async def get_users():
     cursor.close()
     conn.close()
     return result
+
+
      
-     
+#Get Specific User
+@route.get('/user')
+async def get_user(user_id: int):
+    conn = get_connection()
+    field=["id","full_name","address","email","contact","github_link","about_me","created_at"]
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Database connection error")
+    cursor = conn.cursor()
+    cursor.execute("SELECT  id, full_name, address, email, contact, github_link, about_me, created_at FROM users WHERE id = %s", (user_id,))
+    data={key:value for key,value in zip(field,cursor.fetchone())}
+    if  data is None:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return data
+
+
 #Create Users
 @route.post("/users/")
 async def create_users(user: Users):
@@ -98,24 +120,6 @@ async def delete_user(user_id: int):
     conn.close()
     return {"message":f"User {data[0]} is Deleted Successfully"}
 
-#Get Specific User
-@route.get('/user')
-async def get_user(user_id: int):
-    conn = get_connection()
-    field=["id","full_name","address","email","contact","github_link","about_me","created_at"]
-    if conn is None:
-        raise HTTPException(status_code=500, detail="Database connection error")
-    cursor = conn.cursor()
-    cursor.execute("SELECT  id, full_name, address, email, contact, github_link, about_me, created_at FROM users WHERE id = %s", (user_id,))
-    data={key:value for key,value in zip(field,cursor.fetchone())}
-    if  data is None:
-        cursor.close()
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return data
+
 
 

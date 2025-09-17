@@ -12,14 +12,14 @@ route=APIRouter()
 
 # Listing Education
 @route.get('/edus',response_model=List[EduModel])
-async def get_edu():
+async def get_edus():
     conn = get_connection()
     if conn is None:
         raise HTTPException(status_code=500, detail="Database connection error")
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM educations")
     result=cursor.fetchall()
-    if result is None:
+    if result is []:
         cursor.close()
         conn.close()
         raise HTTPException(status_code=404, detail="Eduactions Data Not Found")
@@ -28,7 +28,30 @@ async def get_edu():
     cursor.close()
     conn.close()
     return result
-     
+
+
+#Get Specific Education
+@route.get('/edu')
+async def get_edu(edu_id: int):
+    conn = get_connection()
+    field=["id","degree", "organization","pass_year","is_publish"]
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Database connection error")
+    cursor = conn.cursor()
+    cursor.execute("SELECT  * FROM educations WHERE id = %s", (edu_id,))
+    data=cursor.fetchone()
+    if  data is None:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    data={key:value for key,value in zip(field,data)}
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return data
+
+
      
 #Create Education
 @route.post("/edus/")
@@ -46,8 +69,8 @@ async def create_edu(edus: EduModel):
     cursor.close()
     conn.close()
     
-    # return {"message":f"Education added Successfully"}
-    return edus
+    return {"message":f"'{edus.degree}' Education added Successfully"}
+    # return edus
 
 
 #Update Education data
@@ -69,8 +92,8 @@ async def update_edu(edu_id, edus:EduModel):
         conn.commit()
         cursor.close()
         conn.close()
-        # return {"message":f"Education Updated Successfully"}
-        return edus
+        return {"message":f"'{edus.degree}' Education Updated Successfully"}
+        # return edus
 
 
 #Delete Education
@@ -80,7 +103,7 @@ async def delete_edu(edu_id: int):
     if conn is None:
         raise HTTPException(status_code=500, detail="Database connection error")
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM educations WHERE id = %s", (edu_id,))
+    cursor.execute("SELECT degree, id FROM educations WHERE id = %s", (edu_id,))
     data=cursor.fetchone()
     if  data is None:
         cursor.close()
@@ -91,32 +114,5 @@ async def delete_edu(edu_id: int):
     conn.commit()
     cursor.close()
     conn.close()
-    return {"message":f"Education Deleted Successfully"}
-
-#Get Specific Education
-@route.get('/edu')
-async def get_edu(edu_id: int):
-    conn = get_connection()
-    
-    if conn is None:
-        raise HTTPException(status_code=500, detail="Database connection error")
-    cursor = conn.cursor()
-    cursor.execute("SELECT  * FROM educations WHERE id = %s", (edu_id,))
-    clu=["id","degree", "organization"," pass_year","is_publish"]
-    if  cursor.fetchone() is None:
-        cursor.close()
-        conn.close()
-        raise HTTPException(status_code=404, detail="Education not found")
-    data={key:value for key,value in zip(clu,cursor.fetchone())}
-    
-    if  data is None:
-        cursor.close()
-        conn.close()
-        raise HTTPException(status_code=404, detail="Education not found")
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return data
-
+    return {"message":f"'{data[0]}'Education Deleted Successfully"}
 
